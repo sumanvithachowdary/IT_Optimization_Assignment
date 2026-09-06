@@ -1,19 +1,7 @@
-"""
-Clean and prepare IT support ticket data.
-
-Missing values are handled using field-specific strategies:
-- Categorical issue category -> Unknown
-- Priority -> Mode
-- Resolution time -> Median by priority
-- Satisfaction -> Overall median
-- Cost per hour -> Median by client type / overall median
-"""
-
 import pandas as pd
 
 INPUT_PATH = "/content/Optimization_Assignment/assignment-2/Data/raw_tickets.csv"
 OUTPUT_PATH = "/content/Optimization_Assignment/assignment-2/Data/cleaned_tickets.csv"
-
 
 REQUIRED_COLUMNS = [
     "ticket_id",
@@ -26,7 +14,6 @@ REQUIRED_COLUMNS = [
     "satisfaction_score",
     "total_cost"
 ]
-
 
 def clean_data(df):
     # Validate required columns
@@ -42,10 +29,7 @@ def clean_data(df):
 
     df = df.copy()
 
-    # -------------------------
     # Categorical fields
-    # -------------------------
-
     df["issue_category"] = (
         df["issue_category"]
         .fillna("Unknown")
@@ -64,10 +48,7 @@ def clean_data(df):
             .fillna("Medium")
         )
 
-    # -------------------------
     # Resolution time
-    # -------------------------
-
     overall_resolution_median = (
         df["resolution_time"].median()
     )
@@ -98,11 +79,8 @@ def clean_data(df):
         .fillna(overall_resolution_median)
         .clip(lower=0.25, upper=24.0)
     )
-
-    # -------------------------
+    
     # Satisfaction score
-    # -------------------------
-
     satisfaction_median = (
         df["satisfaction_score"].median()
     )
@@ -112,11 +90,8 @@ def clean_data(df):
         .fillna(satisfaction_median)
         .clip(lower=1.0, upper=5.0)
     )
-
-    # -------------------------
+    
     # Cost per hour
-    # -------------------------
-
     client_cost_medians = (
         df.groupby("client_type")["cost_per_hour"]
         .median()
@@ -143,10 +118,7 @@ def clean_data(df):
         .fillna(df["cost_per_hour"].median())
     )
 
-    # -------------------------
     # Derived feature
-    # -------------------------
-
     df["cost_efficiency"] = (
         df["satisfaction_score"]
         / (df["total_cost"] + 1)
@@ -155,32 +127,23 @@ def clean_data(df):
     # Final validation
     if df.isnull().sum().sum() > 0:
         print("Warning: Some missing values remain.")
-
     return df
-
 
 def main():
     df = pd.read_csv(INPUT_PATH)
-
     print(f"Input records: {len(df):,}")
-
     cleaned_df = clean_data(df)
-
     cleaned_df.to_csv(
         OUTPUT_PATH,
         index=False
     )
-
     print(f"Cleaned records: {len(cleaned_df):,}")
     print(f"Saved to: {OUTPUT_PATH}")
-
     print("\nRemaining missing values:")
     print(
         cleaned_df.isnull().sum()
         .sort_values(ascending=False)
         .head(10)
     )
-
-
 if __name__ == "__main__":
     main()
