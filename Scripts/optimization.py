@@ -17,80 +17,55 @@ def main():
     if sample_tickets == 0:
         raise ValueError("Dataset contains no records.")
 
-    # Annualize development dataset results
-    scale_factor = ANNUAL_TICKETS / sample_tickets
-    current_annual_cost = df["total_cost"].sum() * scale_factor
-    target_annual_savings = current_annual_cost * TARGET_COST_REDUCTION
+    # Annualize development dataset
+    scale = ANNUAL_TICKETS / sample_tickets
+    current_cost = df["total_cost"].sum() * scale
+    target_savings = current_cost * TARGET_COST_REDUCTION
 
-    # Estimate savings from automating simple software/access tickets
-    automation_mask = (
+    # Automation savings for simple software/access tickets
+    automation = (
         df["issue_category"].isin(["Software", "Account/Access"])
         & df["priority"].isin(["Low", "Medium"])
     )
     automation_cost = (
-        df.loc[automation_mask, "resolution_time"]
-        * df.loc[automation_mask, "cost_per_hour"]
+        df.loc[automation, "resolution_time"]
+        * df.loc[automation, "cost_per_hour"]
     ).sum()
     automation_savings = (
         automation_cost * AUTOMATION_COVERAGE
-        * AUTOMATION_COST_REDUCTION * scale_factor
+        * AUTOMATION_COST_REDUCTION * scale
     )
 
-    # Estimate savings from reducing critical network resolution time
-    network_mask = (
+    # Network optimization for critical tickets
+    network = (
         (df["issue_category"] == "Network")
         & (df["priority"] == "Critical")
     )
     network_cost = (
-        df.loc[network_mask, "resolution_time"]
-        * df.loc[network_mask, "cost_per_hour"]
+        df.loc[network, "resolution_time"]
+        * df.loc[network, "cost_per_hour"]
     ).sum()
-    network_savings = network_cost * NETWORK_TIME_REDUCTION * scale_factor
+    network_savings = network_cost * NETWORK_TIME_REDUCTION * scale
 
-    # Estimate savings from reducing escalation costs
+    # Reduce escalation-related costs
     escalation_savings = (
-        df["escalation_count"].sum() * 150
-        * ESCALATION_REDUCTION * scale_factor
+        df["escalation_count"].sum()
+        * 150 * ESCALATION_REDUCTION * scale
     )
 
     total_savings = automation_savings + network_savings + escalation_savings
-    projected_reduction = total_savings / current_annual_cost
-    remaining_gap = max(target_annual_savings - total_savings, 0)
+    reduction = total_savings / current_cost
+    gap = max(target_savings - total_savings, 0)
 
-    # Allocate engineer effort based on resolution hours
-    engineer_hours = df.groupby("client_type")["resolution_time"].sum()
-    allocation = pd.DataFrame({
-        "Resolution Hours": engineer_hours,
-        "Allocation %": engineer_hours / engineer_hours.sum() * 100
-    })
+    # Engineer allocation by client type
+    hours = df.groupby("client_type")["resolution_time"].sum()
+    allocation = hours / hours.sum() * 100
 
-    # Check customer satisfaction target
-    average_satisfaction = df["satisfaction_score"].mean()
-    satisfaction_target = average_satisfaction > 4.2
+    # Customer satisfaction target
+    satisfaction = df["satisfaction_score"].mean()
+    satisfaction_target = satisfaction > 4.2
 
-    print("\n======================================")
-    print("IT SUPPORT COST OPTIMIZATION")
-    print("======================================")
-    print(f"\nDevelopment tickets: {sample_tickets:,}")
-    print(f"Annualized tickets: {ANNUAL_TICKETS:,}")
-    print(f"Annualized current support cost: ${current_annual_cost:,.2f}")
-    print(f"\n20% target savings: ${target_annual_savings:,.2f}")
-
-    print("\nSavings scenarios:")
-    print(f"Automation savings: ${automation_savings:,.2f}")
-    print(f"Network optimization savings: ${network_savings:,.2f}")
-    print(f"Escalation reduction savings: ${escalation_savings:,.2f}")
-    print(f"\nTotal projected savings: ${total_savings:,.2f}")
-    print(f"Projected cost reduction: {projected_reduction * 100:.2f}%")
-    print(f"Remaining gap to 20% target: ${remaining_gap:,.2f}")
-
-    print(f"\nAverage customer satisfaction: {average_satisfaction:.2f}")
-    print(f"Above 4.2 target: {'Yes' if satisfaction_target else 'No'}")
-
-    print("\nEngineer allocation by client type:")
-    print(allocation.round(2))
-
-    # Save optimization summary
+    # Save detailed results
     with open(OUTPUT_PATH, "w") as file:
         file.write(
             f"""IT SUPPORT COST OPTIMIZATION SUMMARY
@@ -98,23 +73,22 @@ def main():
 
 Development tickets: {sample_tickets:,}
 Annualized tickets: {ANNUAL_TICKETS:,}
-Annualized current support cost: ${current_annual_cost:,.2f}
-
-20% target savings: ${target_annual_savings:,.2f}
+Current annual cost: ${current_cost:,.2f}
+20% savings target: ${target_savings:,.2f}
 
 Savings Scenarios
-----------------
-Automation savings: ${automation_savings:,.2f}
-Network optimization savings: ${network_savings:,.2f}
-Escalation reduction savings: ${escalation_savings:,.2f}
+-----------------
+Automation: ${automation_savings:,.2f}
+Network optimization: ${network_savings:,.2f}
+Escalation reduction: ${escalation_savings:,.2f}
 
-Total projected savings: ${total_savings:,.2f}
-Projected cost reduction: {projected_reduction * 100:.2f}%
-Remaining gap to 20% target: ${remaining_gap:,.2f}
+Total savings: ${total_savings:,.2f}
+Cost reduction: {reduction * 100:.2f}%
+Remaining gap: ${gap:,.2f}
 
 Customer Satisfaction
 ---------------------
-Average satisfaction: {average_satisfaction:.2f}
+Average satisfaction: {satisfaction:.2f}
 Above 4.2 target: {'Yes' if satisfaction_target else 'No'}
 
 Engineer Allocation
@@ -122,13 +96,14 @@ Engineer Allocation
 """
         )
 
-        for client_type, row in allocation.iterrows():
-            file.write(
-                f"{client_type}: {row['Resolution Hours']:.2f} hours "
-                f"({row['Allocation %']:.2f}%)\n"
-            )
+        for client, pct in allocation.items():
+            file.write(f"{client}: {pct:.2f}%\n")
 
-    print(f"\nSaved: {OUTPUT_PATH}")
+    # Minimal console output
+    print(f"Cost reduction: {reduction * 100:.2f}%")
+    print(f"Customer satisfaction: {satisfaction:.2f}")
+    print(f"Total savings: ${total_savings:,.2f}")
+    print(f"Results saved: {OUTPUT_PATH}")
 
 if __name__ == "__main__":
     main()
