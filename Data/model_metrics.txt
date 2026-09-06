@@ -1,0 +1,21 @@
+IT SUPPORT ESCALATION MODEL RESULTS
+====================================
+
+Training records: 80,000
+Test records: 20,000
+
+Training time: 0.304797 seconds
+Accuracy: 0.563000
+Precision: 0.353815
+Recall: 0.545907
+F1 Score: 0.429355
+ROC-AUC: 0.575052
+
+Confusion Matrix:
+[[7972 6005]
+ [2735 3288]]
+
+Inference Performance:
+Total inference time: 0.105800 seconds
+Average prediction time: 0.00000529 seconds
+Predictions per second: 189036.40

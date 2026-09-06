@@ -1,0 +1,29 @@
+IT SUPPORT COST OPTIMIZATION SUMMARY
+====================================
+
+Development tickets: 100,000
+Annualized tickets: 2,000,000
+Annualized current support cost: $362,816,761.81
+
+20% target savings: $72,563,352.36
+
+Savings Scenarios
+----------------
+Automation savings: $8,918,826.55
+Network optimization savings: $956,084.28
+Escalation reduction savings: $25,559,250.00
+
+Total projected savings: $35,434,160.83
+Projected cost reduction: 9.77%
+Remaining gap to 20% target: $37,129,191.53
+
+Customer Satisfaction
+---------------------
+Average satisfaction: 4.42
+Above 4.2 target: Yes
+
+Engineer Allocation
+-------------------
+Small: 111921.49 hours (50.02%)
+Medium: 67190.63 hours (30.03%)
+Enterprise: 44625.04 hours (19.95%)
