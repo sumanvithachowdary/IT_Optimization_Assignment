@@ -1,7 +1,7 @@
 import pandas as pd
 
-INPUT_PATH = "/content/Optimization_Assignment/assignment-2/Data/cleaned_tickets.csv"
-OUTPUT_PATH = "/content/Optimization_Assignment/assignment-2/Data/optimization_summary.txt"
+INPUT_PATH = "IT_Optimization_Assignment/Data/cleaned_tickets.csv"
+OUTPUT_PATH = "IT_Optimization_Assignment/Data/optimization_summary.txt"
 
 ANNUAL_TICKETS = 2_000_000
 AUTOMATION_COVERAGE = 0.30
